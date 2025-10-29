@@ -1,0 +1,20 @@
+{
+  "name": "poker99-prototype",
+  "version": "0.1.0",
+  "description": "Prototype for 九九 (web) - simple Node + socket.io implementation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.16"
+  }
+}

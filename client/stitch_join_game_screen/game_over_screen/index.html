@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Game Over</title>
+<style>
+  :root{
+    --bg:#1d2431;
+    --panel:#252e3f;
+    --panel2:#2a3446;
+    --stroke:rgba(255,255,255,.08);
+    --text:#ecf2f8;
+    --muted:#a9b6c8;
+    --accent:#18f5d2;
+    --accent-2:#0fd3c2;
+    --gold:#ffd84a;
+    --gold-2:#ffb800;
+    --shadow:0 18px 40px rgba(0,0,0,.45);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--text);
+    font:16px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background:
+      radial-gradient(circle at 24px 24px, rgba(255,255,255,.04) 1px, transparent 2px) 0 0/28px 28px,
+      var(--bg);
+    display:flex;justify-content:flex-start;align-items:flex-start;
+    min-height:100%; padding:40px 20px;
+  }
+  .container{ width:min(700px,92vw); margin:0 auto; }
+  h1{
+    text-align:center; font-size:48px; margin:0 0 26px; letter-spacing:.3px;
+  }
+
+  /* Winner card */
+  .winner{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--stroke);
+    border-radius:22px; padding:28px 24px;
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .winner .top{ display:flex; align-items:center; gap:20px; }
+  .avatar{
+    position:relative; width:96px; height:96px; border-radius:999px; overflow:hidden;
+    background:linear-gradient(180deg,#3b4a5e,#283647);
+    display:grid;place-items:center;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.06);
+  }
+  .ring{
+    position:absolute; inset:-5px; border-radius:999px;
+    background:
+      radial-gradient(closest-side, transparent 78%, rgba(0,0,0,.5) 79% 82%, transparent 83%) ,
+      conic-gradient(from 200deg, var(--gold), var(--gold-2));
+    -webkit-mask: radial-gradient(closest-side, transparent 70%, #000 71%);
+            mask: radial-gradient(closest-side, transparent 70%, #000 71%);
+    pointer-events:none;
+  }
+  .trophy{
+    position:absolute; right:-6px; bottom:-6px;
+    width:34px;height:34px;border-radius:999px;
+    background:linear-gradient(180deg,var(--gold),var(--gold-2));
+    border:3px solid #18202b; display:grid;place-items:center; color:#222;
+  }
+  .trophy svg{ width:18px; height:18px }
+  .name{ font-size:22px; font-weight:800 }
+  .subwin{ color:#28d8d1; font-weight:700; margin-top:4px }
+
+  /* Summary */
+  .section-title{ margin:24px 0 12px; font-weight:800; }
+  .list{ display:flex; flex-direction:column; gap:14px; }
+  .row{
+    display:flex; align-items:center; gap:14px;
+    background:linear-gradient(180deg,#283347,#273242);
+    border:1px solid var(--stroke); border-radius:16px; padding:12px 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .row.best{ outline:2px solid rgba(24,245,210,.35) }
+  .row .a{ width:56px; height:56px; border-radius:14px; overflow:hidden;
+           background:linear-gradient(180deg,#3f5c69,#2b3f4c) }
+  .row .info{ flex:1 }
+  .row .info .n{ font-weight:700 }
+  .row .info .m{ font-size:13px; color:var(--muted) }
+  .row .score{ font-weight:900; letter-spacing:.2px }
+  .row .score small{ font-weight:700; color:#c9d5e6 }
+
+  /* Buttons */
+  .cta{
+    margin:22px 0 8px; padding:0; border:0; cursor:pointer;
+    width:100%; height:58px; border-radius:999px; font-weight:900;
+    color:#042c2d; font-size:1.05rem;
+    background:linear-gradient(180deg,var(--accent),var(--accent-2));
+    box-shadow:0 18px 40px rgba(24,245,210,.25), inset 0 1px 0 rgba(255,255,255,.35);
+    transition: transform .06s ease, filter .2s ease;
+  }
+  .cta:hover{ filter:brightness(1.05) }
+  .cta:active{ transform:translateY(1px) }
+  .back{
+    text-align:center; margin-top:10px; color:#39f2e2; text-decoration:none;
+  }
+  .hint{ color:#9fb0c2; font-size:12px; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Game Over!</h1>
+
+    <!-- Winner block -->
+    <section class="winner" aria-label="Winner">
+      <div class="top">
+        <div class="avatar" aria-hidden="true">
+          <!-- 可替換為 <img src="xxx.jpg" alt=""> -->
+          <div class="ring"></div>
+          <svg viewBox="0 0 100 100" width="100" height="100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#7be1ff"/>
+                <stop offset="1" stop-color="#2b5f79"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" fill="url(#g)"/>
+            <circle cx="65" cy="30" r="24" fill="#143b4c" opacity=".5"/>
+            <circle cx="45" cy="38" r="18" fill="#8ae3ff"/>
+            <rect x="28" y="55" width="44" height="30" rx="12" fill="#0f2d3a"/>
+          </svg>
+          <div class="trophy" title="Winner">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h10v2h3v3a5 5 0 0 1-4 4.9A5 5 0 0 1 12 16a5 5 0 0 1-4-2.1A5 5 0 0 1 4 9V6h3V4zm12 4V6h-2v4.1A3 3 0 0 0 19 8zM7 10.1V6H5v2a3 3 0 0 0 2 2.1zM12 18c1.7 0 3.2-.8 4.1-2H7.9A5 5 0 0 0 12 18zm-6 2h12v2H6z"/></svg>
+          </div>
+        </div>
+        <div>
+          <div class="name">Alex Johnson</div>
+          <div class="subwin">Winner</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <h3 class="section-title">Game Summary</h3>
+    <div class="list" role="list">
+      <div class="row best" role="listitem">
+        <div class="a"></div>
+        <div class="info">
+          <div class="n">Alex Johnson</div>
+          <div class="m">Rounds Won: 5</div>
+        </div>
+        <div class="score">150 <small>Pts</small></div>
+      </div>
+
+      <div class="row" role="listitem">
+        <div class="a"></div>
+        <div class="info">
+          <div class="n">Ben Carter</div>
+          <div class="m">Rounds Won: 3</div>
+        </div>
+        <div class="score">120 <small>Pts</small></div>
+      </div>
+
+      <div class="row" role="listitem">
+        <div class="a"></div>
+        <div class="info">
+          <div class="n">Chloe Davis</div>
+          <div class="m">Rounds Won: 2</div>
+        </div>
+        <div class="score">95 <small>Pts</small></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <button class="cta" onclick="alert('Play Again')">Play Again</button>
+    <a class="back" href="#" onclick="alert('Return to Lobby');return false;">Return to Lobby</a>
+    
+  </div>
+</body>
+</html>
