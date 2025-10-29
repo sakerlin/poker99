@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global base */
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.game-container {
+  background-color: #3a3f47;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
+}
+
+h1 {
+  text-align: center;
+  color: #61dafb;
+}
+
+.controls,
+.game-info,
+.players-info,
+.hand-info,
+.log-container {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #444b55;
+  border-radius: 5px;
+}
+
+.controls input[type="text"] {
+  padding: 8px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #282c34;
+  color: white;
+}
+
+.controls button,
+.hand-info button,
+.player-selection-modal button {
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.controls button:hover,
+.hand-info button:hover,
+.player-selection-modal button:hover {
+  background-color: #21a1f1;
+}
+
+.game-info p {
+  margin: 5px 0;
+}
+
+.players-info span {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 5px 10px;
+  background-color: #555;
+  border-radius: 3px;
+}
+
+.players-info span.eliminated {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.hand-info button {
+  margin-bottom: 5px;
+}
+
+.log-container #log {
+  background-color: #282c34;
+  height: 150px;
+  overflow-y: scroll;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #bbb;
+}
+
+.log-container #log div {
+  margin-bottom: 3px;
+}
+
+.player-selection-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.player-selection-modal {
+  background-color: #3a3f47;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.player-selection-modal h3 {
+  color: #61dafb;
+  margin-top: 0;
+}
+
+.player-selection-modal button {
+  margin: 5px;
+}
+
+/* JoinGame specific helpers (ported from design HTML) */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.form-input-container:focus-within {
+  border-color: #13a4ec;
+  box-shadow: 0 0 0 2px rgba(19, 164, 236, 0.2);
+}
+.form-input-container:focus-within .material-symbols-outlined {
+  color: #13a4ec;
+}
+.background-pattern {
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(19, 164, 236, 0.05) 5%, transparent 0),
+    radial-gradient(circle at 85% 85%, rgba(19, 164, 236, 0.05) 5%, transparent 0),
+    radial-gradient(circle at 50% 90%, rgba(19, 164, 236, 0.03) 8%, transparent 0),
+    radial-gradient(circle at 90% 10%, rgba(19, 164, 236, 0.03) 8%, transparent 0),
+    radial-gradient(circle at 10% 80%, rgba(19, 164, 236, 0.03) 8%, transparent 0);
+  background-size: 100px 100px;
+}
