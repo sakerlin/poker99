@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import './App.css';
@@ -8,7 +8,14 @@ import GameLobby from './components/GameLobby';
 import InGame from './components/InGame';
 import GameOver from './components/GameOver';
 
-const socket = io('http://localhost:8080'); // Connect to the backend server
+// 自動檢測當前主機的 IP 地址
+const getServerUrl = () => {
+  const hostname = window.location.hostname;
+  const port = '8080';
+  return `http://${hostname}:${port}`;
+};
+
+const socket = io(getServerUrl()); // Connect to the backend server
 
 function AppContent() {
   const navigate = useNavigate();
