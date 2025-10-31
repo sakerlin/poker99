@@ -1,8 +1,28 @@
 import React from 'react';
 import './GameOver.css';
 
-function GameOver({ winners, onPlayAgain, onLeaveRoom }) {
+function GameOver({ winners, players = [], gameStats, playerStats = [], onPlayAgain, onLeaveRoom }) {
   const winner = winners.length > 0 ? winners[0] : null;
+
+  // Format duration (seconds to mm:ss)
+  const formatDuration = (seconds) => {
+    if (!seconds) return '0m 0s';
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}m ${secs}s`;
+  };
+
+  // Get player stats with score
+  const getPlayerWithStats = (playerId) => {
+    return playerStats.find(p => p.id === playerId) || { score: 0, roundsWon: 0 };
+  };
+
+  // Sort players by score (descending)
+  const sortedPlayers = [...players].sort((a, b) => {
+    const statsA = getPlayerWithStats(a.id);
+    const statsB = getPlayerWithStats(b.id);
+    return statsB.score - statsA.score; // 從高到低排序
+  });
 
   return (
     <div className="game-over-body">
@@ -11,36 +31,71 @@ function GameOver({ winners, onPlayAgain, onLeaveRoom }) {
 
         {winner && (
           <section className="winner" aria-label="Winner">
-            <div className="top">
-              <div className="avatar" aria-hidden="true">
-                <div className="ring"></div>
-                <svg viewBox="0 0 100 100" width="100" height="100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#7be1ff" />
-                      <stop offset="1" stopColor="#2b5f79" />
-                    </linearGradient>
-                  </defs>
-                  <rect width="100" height="100" fill="url(#g)" />
-                  <circle cx="65" cy="30" r="24" fill="#143b4c" opacity=".5" />
-                  <circle cx="45" cy="38" r="18" fill="#8ae3ff" />
-                  <rect x="28" y="55" width="44" height="30" rx="12" fill="#0f2d3a" />
-                </svg>
-                <div className="trophy" title="Winner">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h10v2h3v3a5 5 0 0 1-4 4.9A5 5 0 0 1 12 16a5 5 0 0 1-4-2.1A5 5 0 0 1 4 9V6h3V4zm12 4V6h-2v4.1A3 3 0 0 0 19 8zM7 10.1V6H5v2a3 3 0 0 0 2 2.1zM12 18c1.7 0 3.2-.8 4.1-2H7.9A5 5 0 0 0 12 18zm-6 2h12v2H6z" /></svg>
+            <div className="winner-content">
+              <div className="winner-avatar-wrapper">
+                <div className="winner-avatar" aria-hidden="true">
+                  {winner.name.charAt(0)}
+                </div>
+                <div className="trophy-badge">
+                  <span className="material-symbols-outlined">workspace_premium</span>
                 </div>
               </div>
-              <div>
-                <div className="name">{winner.name}</div>
-                <div className="subwin">Winner</div>
+              <div className="winner-info">
+                <div className="winner-name">{winner.name}</div>
+                <div className="winner-label">Winner</div>
               </div>
             </div>
           </section>
         )}
 
-        <button className="cta" onClick={onPlayAgain}>Play Again</button>
-        <a className="back" onClick={onLeaveRoom}>Return to Lobby</a>
+        {players.length > 0 && (
+          <>
+            <h2 className="section-title">Game Records</h2>
 
+            {gameStats && (
+              <div className="game-records">
+                <div className="record-card">
+                  <div className="record-label">Game Duration</div>
+                  <div className="record-value">{formatDuration(gameStats.duration)}</div>
+                </div>
+                <div className="record-card">
+                  <div className="record-label">Total Rounds</div>
+                  <div className="record-value">{gameStats.roundCount}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="summary-list" role="list">
+              {sortedPlayers.map((p) => {
+                const isWinner = winners.some((w) => w.id === p.id);
+                const stats = getPlayerWithStats(p.id);
+                return (
+                  <div className={`summary-item ${isWinner ? 'winner-item' : ''}`} role="listitem" key={p.id}>
+                    <div className="item-avatar">
+                      {p.name.charAt(0)}
+                    </div>
+                    <div className="item-info">
+                      <div className="item-name">{p.name}</div>
+                      <div className="item-meta">Rounds Won: {stats.roundsWon}</div>
+                    </div>
+                    <div className="item-score">
+                      {stats.score} <span className="pts-label">Pts</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        <div className="actions">
+          <button className="btn-secondary" onClick={onLeaveRoom}>
+            Leave Room
+          </button>
+          <button className="btn-primary" onClick={onPlayAgain}>
+            Play Again
+          </button>
+        </div>
       </div>
     </div>
   );

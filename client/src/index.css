@@ -1,7 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Minimal reset replacing Tailwind Preflight */
+html, body, h1, h2, h3, h4, p, ul, ol, li, figure, blockquote, dl, dd { margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; }
 /* Global base */
 body {
   margin: 0;

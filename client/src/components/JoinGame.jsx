@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './JoinGame.css';
 
-function JoinGame({ onJoin, onCreate }) {
-  const [name, setName] = useState('');
-  const [roomId, setRoomId] = useState('');
+const STORAGE_KEY = 'poker99_player_name';
 
-  const handleJoin = () => {
-    if (name && roomId) {
-      onJoin(roomId, name);
+function JoinGame({ onJoin, onCreate, availableRooms = [], onRequestRooms }) {
+  const [name, setName] = useState('');
+
+  // 從 localStorage 讀取保存的 name
+  useEffect(() => {
+    const savedName = localStorage.getItem(STORAGE_KEY);
+    if (savedName) {
+      setName(savedName);
+    }
+  }, []);
+
+  useEffect(() => {
+    // 請求房間列表
+    if (onRequestRooms) {
+      console.log('JoinGame: Requesting rooms list');
+      onRequestRooms();
+    }
+  }, [onRequestRooms]);
+
+  const handleNameChange = (e) => {
+    const newName = e.target.value;
+    setName(newName);
+    // 如果輸入不為空，則保存到 localStorage
+    if (newName.trim()) {
+      localStorage.setItem(STORAGE_KEY, newName);
     }
   };
 
@@ -18,15 +38,17 @@ function JoinGame({ onJoin, onCreate }) {
     }
   };
 
+  const handleJoinFromList = (roomId) => {
+    if (name) {
+      onJoin(roomId, name);
+    }
+  };
+
   return (
     <div className="join-game-container">
       <main className="wrap" role="main">
         <div className="logo panel" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="5" y="4" width="14" height="16" rx="3" fill="#0ea5e9" opacity=".18" />
-            <rect x="7" y="6" width="10" height="12" rx="2" stroke="#4cc3ff" strokeWidth="1.6" fill="none" />
-            <path d="M12 9.2l2.2 3.8H9.8L12 9.2z" fill="#4cc3ff" />
-          </svg>
+          <span className="material-symbols-outlined" aria-hidden="true">playing_cards</span>
         </div>
 
         <h1>Join a Game</h1>
@@ -35,10 +57,7 @@ function JoinGame({ onJoin, onCreate }) {
           <div className="group">
             <label className="label" htmlFor="name">Your Name</label>
             <div className="input panel">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" stroke="#b6c3d8" strokeWidth="1.5" />
-                <path d="M4 20a8 8 0 0 1 16 0" stroke="#b6c3d8" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <span className="material-symbols-outlined" aria-hidden="true">person</span>
               <input
                 id="name"
                 name="name"
@@ -46,33 +65,58 @@ function JoinGame({ onJoin, onCreate }) {
                 placeholder="Player1"
                 required
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={handleNameChange}
               />
             </div>
           </div>
+        </div>
 
-          <div className="group">
-            <label className="label" htmlFor="room">Room Code</label>
-            <div className="input panel">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="8.5" cy="10.5" r="3.5" stroke="#b6c3d8" strokeWidth="1.5" />
-                <path d="M11.5 10.5H20m0 0v3m0-3v-3" stroke="#b6c3d8" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              <input
-                id="room"
-                name="room"
-                inputMode="numeric"
-                pattern="[0-9]{4}"
-                maxLength="4"
-                placeholder="Enter 4–digit code"
-                value={roomId}
-                onChange={(e) => setRoomId(e.target.value)}
-              />
-            </div>
+        <div className="room-list-section">
+          <div className="room-list-header">
+            <h2>Room List</h2>
+            <button className="btn-create panel" type="button" onClick={handleCreate} disabled={!name}>
+              <span className="material-symbols-outlined">add</span>
+              Create Room
+            </button>
           </div>
 
-          <button className="btn panel" type="submit" onClick={handleJoin}>Join Game</button>
-          <p className="helper">Or <a href="#" onClick={handleCreate}>create a new game</a></p>
+          <div className="room-list">
+            {availableRooms.length === 0 ? (
+              <div className="room-empty">
+                <span className="material-symbols-outlined">info</span>
+                <p>No rooms available</p>
+              </div>
+            ) : (
+              availableRooms.map((room) => (
+                <div key={room.id} className="room-item">
+                  <div className="room-item-left">
+                    <span className={`material-symbols-outlined ${room.started ? 'room-locked' : 'room-open'}`}>
+                      {room.started ? 'lock_open' : 'groups'}
+                    </span>
+                    <div className="room-info">
+                      <span className="room-name">Room {room.id}</span>
+                      <span className="room-host">
+                        {room.players.length > 0 ? `${room.players[0].name}'s Game` : 'Public Game'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="room-item-right">
+                    <div className="room-players">
+                      <span className="material-symbols-outlined">person</span>
+                      <span>{room.players.length}/4</span>
+                    </div>
+                    <button
+                      className="btn-join-room"
+                      onClick={() => handleJoinFromList(room.id)}
+                      disabled={!name || room.started || room.players.length >= 4}
+                    >
+                      Join
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </main>
     </div>
