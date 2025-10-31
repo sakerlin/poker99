@@ -65,3 +65,88 @@ UI 設計建議：
 - 視覺回饋： 當有玩家出牌、輪到下一位，或有玩家被淘汰時，都應該有明確的視覺回饋。
 - 行動裝置友善： 介面佈局應該要能適應不同螢幕尺寸，在手機上也能順暢遊玩。
 - 美術風格： 乾淨、現代且有趣的風格會很適合這款卡牌遊戲。可以考慮將手牌按鈕設計成真實卡牌的樣子。
+
+---
+
+## 最近的功能修改記錄
+
+### 1. Game Over 頁面改進
+
+- **玩家列表排序**：
+
+  - 玩家列表按照得分（pt）從高到低排序顯示
+  - 得分最高的玩家顯示在最上方
+
+- **版面調整**：
+  - Game Duration 和 Total Rounds 統計卡片移到 "Game Records" 標題下方
+  - 調整了各元素的間距和 padding，保持一致的對齊
+
+### 2. In Game 頁面功能增強
+
+- **新增按鈕**：
+
+  - 添加了 "Leave Room" 按鈕（右上角），允許玩家隨時離開房間
+  - 添加了 "Concede" 按鈕（紅色），允許玩家主動認輸
+
+- **Concede 確認對話框**：
+
+  - 點擊 Concede 按鈕時顯示確認對話框
+  - 對話框包含標題 "Concede Game?" 和警告訊息
+  - 提供 "Cancel" 和 "Yes, Concede" 兩個選項
+  - 背景模糊效果（backdrop-filter），提升視覺體驗
+
+- **UI 調整**：
+  - Topbar 的上下 padding 調整為 8px
+  - 確保按鈕在寬螢幕時不會被截斷（使用 flex-shrink: 0 和 white-space: nowrap）
+  - Topbar 寬度限制在 board 容器內
+
+### 3. Join Game 頁面本地存儲功能
+
+- **Name 記憶功能**：
+  - 使用 localStorage 保存用戶輸入的 name
+  - 當用戶重新進入 Join Game 頁面時，自動在輸入框顯示上次保存的 name
+  - 如果用戶輸入不同的 name，會自動更新保存的值
+  - Name 會保留直到瀏覽器關閉
+
+### 4. Lobby 頁面 Host 權限控制
+
+- **Host 識別**：
+
+  - 房間創建者（host）會在玩家名稱後面顯示 "hoster" 後綴
+  - Host 在玩家列表中會顯示特殊的 host badge 圖標
+
+- **Start Game 權限**：
+  - 只有房間創建者（host）可以按 "Start Game" 按鈕
+  - 非 host 玩家看到 Start Game 按鈕為禁用狀態
+  - Server 端也會驗證 host 權限，防止非 host 玩家啟動遊戲
+
+### 5. Server 端 Host 管理
+
+- **Host 識別機制**：
+
+  - 創建房間時，創建者自動設置 `isHost: true`
+  - 加入房間的玩家設置 `isHost: false`
+  - `room_update` 事件中包含 `isHost` 屬性
+
+- **Host 轉移機制**：
+
+  - 當 host 離開房間時，如果還有其他玩家，host 權限會自動轉移給第一個剩餘的玩家
+  - 確保房間始終有 host 可以管理遊戲
+
+- **權限驗證**：
+  - `start_game` 事件中添加 host 權限檢查
+  - 非 host 玩家嘗試啟動遊戲會收到錯誤訊息："Only the host can start the game"
+
+### 6. 遊戲統計和得分系統
+
+- **玩家得分系統**：
+
+  - 每位玩家有持續的得分記錄（persistent across games）
+  - 每場遊戲的獲勝者獲得 5 分
+  - 記錄每位玩家的總得分和獲勝回合數（roundsWon）
+
+- **遊戲記錄**：
+  - 每個房間記錄牌局總數（roundCount）
+  - 牌局總數只在出現贏家時 +1（不是每次出牌時）
+  - Game Over 頁面顯示遊戲持續時間和總回合數
+  - 玩家記錄列表顯示每位玩家的得分和獲勝回合數

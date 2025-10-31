@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import './App.css';
@@ -25,6 +25,13 @@ function AppContent() {
   const [cardToPlayForFive, setCardToPlayForFive] = useState(null);
   const [gameWinners, setGameWinners] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [gameStats, setGameStats] = useState(null);
+  const [playerStats, setPlayerStats] = useState([]);
+
+  const handleRequestRooms = useCallback(() => {
+    socket.emit('request_rooms');
+  }, []);
 
   const meId = socket.id;
 
@@ -32,6 +39,11 @@ function AppContent() {
     // Redirect if playerName is empty and trying to access /lobby
     if (!playerName && location.pathname === '/lobby') {
       navigate('/');
+    }
+
+    // 當返回首頁時，請求房間列表
+    if (location.pathname === '/') {
+      socket.emit('request_rooms');
     }
 
     socket.on('room_created', ({ roomId }) => {
@@ -73,15 +85,23 @@ function AppContent() {
 
 
 
-    socket.on('game_over', ({ winners }) => {
-      console.log('Game Over event received!', winners);
+    socket.on('game_over', ({ winners, gameStats, playerStats }) => {
+      console.log('Game Over event received!', winners, gameStats, playerStats);
       setGameWinners(winners);
+      setGameStats(gameStats);
+      setPlayerStats(playerStats || []);
       setGameStarted(false);
       navigate('/game-over');
     });
 
     socket.on('error_message', (m) => {
       console.error('Client: Received error_message from server:', m);
+    });
+
+    socket.on('rooms_list', ({ rooms }) => {
+      console.log('Client: Received rooms_list:', rooms);
+      console.log('Client: Current location:', location.pathname);
+      setAvailableRooms(rooms);
     });
 
     return () => {
@@ -93,6 +113,7 @@ function AppContent() {
 
       socket.off('game_over');
       socket.off('error_message');
+      socket.off('rooms_list');
     };
   }, [meId, navigate, players, gameStarted, playerName, location.pathname]);
 
@@ -125,6 +146,8 @@ function AppContent() {
 
   const handlePlayAgain = () => {
     setGameWinners([]);
+    setGameStats(null);
+    setPlayerStats([]);
     setHand([]);
     setCurrentValue(0);
     setTurnInfo('');
@@ -139,17 +162,27 @@ function AppContent() {
     setPlayers([]); // Clear players list
     setGameStarted(false); // Reset game started state
     setGameWinners([]); // Clear game winners
+    setGameStats(null); // Clear game stats
+    setPlayerStats([]); // Clear player stats
     setHand([]); // Clear hand
     setCurrentValue(0); // Reset current value
     setTurnInfo(''); // Reset turn info
     setShowPlayerSelection(false); // Reset selection state
     setCardToPlayForFive(null); // Reset card for five
     navigate('/'); // Navigate to JoinGame page
+    // 請求房間列表
+    setTimeout(() => {
+      socket.emit('request_rooms');
+    }, 100);
+  };
+
+  const handleConcede = () => {
+    socket.emit('concede', { roomId });
   };
 
   return (
     <Routes>
-      <Route path="/" element={<JoinGame onJoin={handleJoinRoom} onCreate={handleCreateRoom} />} />
+      <Route path="/" element={<JoinGame onJoin={handleJoinRoom} onCreate={handleCreateRoom} availableRooms={availableRooms} onRequestRooms={handleRequestRooms} />} />
       <Route
         path="/lobby"
         element={<GameLobby
@@ -157,6 +190,7 @@ function AppContent() {
               onStartGame={handleStartGame}
               roomId={roomId}
               onLeaveRoom={handleLeaveRoom}
+              meId={meId}
             />}
       />
       <Route
@@ -173,12 +207,16 @@ function AppContent() {
               cardToPlayForFive={cardToPlayForFive}
               setShowPlayerSelection={setShowPlayerSelection}
               onLeaveRoom={handleLeaveRoom}
+              onConcede={handleConcede}
             />}
       />
       <Route
         path="/game-over"
         element={<GameOver
               winners={gameWinners}
+              players={players}
+              gameStats={gameStats}
+              playerStats={playerStats}
               onPlayAgain={handlePlayAgain}
               onLeaveRoom={handleLeaveRoom}
             />}

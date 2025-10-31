@@ -1,8 +1,12 @@
 import React from 'react';
 import './GameLobby.css';
 
-function GameLobby({ players, onStartGame, roomId, onLeaveRoom }) {
+function GameLobby({ players, onStartGame, roomId, onLeaveRoom, meId }) {
   const avatarColors = ['alt', '', 'pink'];
+  const MAX_PLAYERS = 4;
+
+  // 檢查當前用戶是否是 host
+  const isHost = players.some(p => p.id === meId && p.isHost);
 
   return (
     <div className="game-lobby-body">
@@ -17,7 +21,7 @@ function GameLobby({ players, onStartGame, roomId, onLeaveRoom }) {
 
       <main className="game-lobby-main">
         <h1>Game Lobby</h1>
-        <div className="sub">{players.length}/8 Players Joined</div>
+        <div className="sub">{players.length}/{MAX_PLAYERS} Players Joined</div>
 
         <section className="card" aria-label="Players">
           <div className="list">
@@ -30,11 +34,10 @@ function GameLobby({ players, onStartGame, roomId, onLeaveRoom }) {
                     </span>
                   )}
                 </div>
-                <div className="name">{p.name}</div>
-                {p.isHost && <div className="meta">(Host)</div>}
+                <div className="name">{p.name}{p.isHost ? ' hoster' : ''}</div>
               </div>
             ))}
-            {Array.from({ length: 8 - players.length }).map((_, i) => (
+            {Array.from({ length: Math.max(0, MAX_PLAYERS - players.length) }).map((_, i) => (
               <div className="item waiting" key={`waiting-${i}`}>
                 <div className="avatar">
                   <svg viewBox="0 0 24 24" fill="none">
@@ -49,7 +52,7 @@ function GameLobby({ players, onStartGame, roomId, onLeaveRoom }) {
         </section>
 
         <div className="cta-wrap">
-          <button className="cta" onClick={onStartGame} disabled={players.length < 2}>Start Game</button>
+          <button className="cta" onClick={onStartGame} disabled={players.length < 2 || !isHost}>Start Game</button>
         </div>
       </main>
     </div>

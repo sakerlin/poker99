@@ -88,35 +88,41 @@
     background:linear-gradient(180deg,#1e2937,#1b2431);
     border:1px solid rgba(255,255,255,.06);
     border-radius:18px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
-.avatar{
-    width:46px;height:46px;border-radius:14px;position:relative;flex:0 0 46px;
+.item:hover{ filter:brightness(1.02) }
+.game-lobby-body .avatar{
+    width:46px;
+    height:46px;
+    border-radius:14px;
+    position:relative;
+    flex:0 0 46px;
     background: radial-gradient(circle at 30% 30%, #ffcc80, #ff7043 55%, #ef5350 100%);
     box-shadow:inset 0 0 0 2px rgba(255,255,255,.08);
 }
-.avatar.alt{ background: radial-gradient(circle at 28% 32%, #b5f0ff, #7f9bff 55%, #6f58ff 100%); }
-.avatar.pink{ background: radial-gradient(circle at 28% 32%, #ffd1e3, #ff8fb3 55%, #ff5a7a 100%); }
-.host-badge{
+.game-lobby-body .avatar.alt{ background: radial-gradient(circle at 28% 32%, #b5f0ff, #7f9bff 55%, #6f58ff 100%); }
+.game-lobby-body .avatar.pink{ background: radial-gradient(circle at 28% 32%, #ffd1e3, #ff8fb3 55%, #ff5a7a 100%); }
+.game-lobby-body .host-badge{
     position:absolute; right:-4px; bottom:-4px;
     width:18px;height:18px;border-radius:50%;
     background:conic-gradient(from 200deg,#ff9a2a,#ff6a00);
     display:grid;place-items:center; box-shadow:0 0 0 2px #1e2937;
 }
-.host-badge svg{ width:12px;height:12px; fill:#fff }
+.game-lobby-body .host-badge svg{ width:12px;height:12px; fill:#fff }
 
-.name{ font-weight:700 }
-.meta{ color:var(--muted-2); font-size:14px; margin-left:6px }
+.game-lobby-body .name{ font-weight:700 }
+.game-lobby-body .meta{ color:var(--muted-2); font-size:14px; margin-left:6px }
 
-.waiting{
+.game-lobby-body .waiting{
     opacity:.6; color:#c3cedd;
     background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,255,255,.04) 8px 16px), linear-gradient(180deg,#2a3645,#273444);
     border:1.5px dashed rgba(255,255,255,.18);
 }
-.waiting .avatar{
+.game-lobby-body .waiting .avatar{
     background:linear-gradient(180deg,#334556,#2a394a);
     display:grid;place-items:center;
 }
-.waiting .avatar svg{ width:22px;height:22px; stroke:#a8b4c4 }
+.game-lobby-body .waiting .avatar svg{ width:22px;height:22px; stroke:#a8b4c4 }
 
 .cta-wrap{ width:min(520px,88vw); margin:8px auto 60px; }
 .cta{
@@ -128,6 +134,15 @@
 }
 .cta:hover{ filter:brightness(1.05) }
 .cta:active{ transform: translateY(1px) }
+
+/* Disabled state to match design system */
+.cta:disabled{
+    background:linear-gradient(180deg,#475569,#374151);
+    color:#e5e7eb;
+    box-shadow:none;
+    cursor:not-allowed;
+    filter:none;
+}
 
 @media (max-width:520px){
     h1{ font-size:34px }
