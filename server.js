@@ -6,8 +6,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Allow requests from our frontend
+    origin: (origin, callback) => {
+      // Allow requests from localhost and local network IPs on port 5173
+      const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+      // Check if origin matches local network pattern (192.168.x.x:5173)
+      const isLocalNetwork =
+        origin && /^http:\/\/192\.168\.\d+\.\d+:5173$/.test(origin);
+
+      if (!origin || allowedOrigins.includes(origin) || isLocalNetwork) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -222,6 +235,50 @@ function nextAliveIndex(room, startIndex, step = 1) {
     }
   }
   return -1; // No suitable alive player found
+}
+
+function calculateCardEffectValue(room, card) {
+  // 計算這張牌會讓 currentValue 變成多少，但不實際修改 room.currentValue
+  const r = card.rank;
+  let newValue = room.currentValue;
+
+  if (r === "A") {
+    newValue += 1;
+  } else if (r === "J") {
+    // J 不改變數值
+    newValue = room.currentValue;
+  } else if (r === "4") {
+    // 4 不改變數值，只改變方向
+    newValue = room.currentValue;
+  } else if (r === "5") {
+    // 5 不改變數值
+    newValue = room.currentValue;
+  } else if (r === "K") {
+    newValue = 99;
+  } else if (r === "Q") {
+    if (room.currentValue + 20 > 99) {
+      newValue = room.currentValue - 20;
+    } else {
+      newValue = room.currentValue + 20;
+    }
+  } else {
+    // numeric 2-10 and others
+    const v = parseInt(r, 10);
+    if (!isNaN(v)) {
+      if (v === 10) {
+        if (room.currentValue + 10 > 99) {
+          newValue = room.currentValue - 10;
+        } else {
+          newValue = room.currentValue + 10;
+        }
+      } else {
+        newValue = room.currentValue + v;
+      }
+    } else {
+      newValue = room.currentValue;
+    }
+  }
+  return newValue;
 }
 
 function applyCardEffect(room, playerId, card, optionalTarget) {
@@ -467,24 +524,15 @@ io.on("connection", (socket) => {
     if (cardIdx === -1) return socket.emit("error_message", "card not in hand");
     const [card] = player.hand.splice(cardIdx, 1);
     room.pile.push(card);
-    const res = applyCardEffect(room, player.id, card, targetId);
-    io.to(roomId).emit(
-      "log",
-      res.log + ` -> currentValue=${room.currentValue}`
-    );
 
-    // draw
-    if (room.deck.length === 0) {
-      // reshuffle pile into deck
-      room.deck = room.pile.splice(0, room.pile.length - 0);
-      shuffle(room.deck);
-      io.to(roomId).emit("log", "Reshuffled pile into deck");
-    }
-    const drawn = room.deck.pop();
-    if (drawn) player.hand.push(drawn);
+    // 先計算卡牌效果後的 currentValue
+    const newValue = calculateCardEffectValue(room, card);
 
-    // check elimination
-    if (room.currentValue > 99) {
+    let res = { log: "", skipNext: false, setNextPlayer: null };
+
+    // 檢查是否會超過 99
+    if (newValue > 99) {
+      // 淘汰玩家，但不應用卡牌效果
       player.eliminated = true;
       io.to(roomId).emit("player_eliminated", {
         playerId: player.id,
@@ -492,8 +540,36 @@ io.on("connection", (socket) => {
       });
       io.to(roomId).emit(
         "log",
-        `${player.name} eliminated (value ${room.currentValue} > 99)`
+        `${player.name} eliminated (would cause value ${newValue} > 99)`
       );
+
+      // 抽一張牌（即使被淘汰也要抽牌）
+      if (room.deck.length === 0) {
+        room.deck = room.pile.splice(0, room.pile.length - 0);
+        shuffle(room.deck);
+        io.to(roomId).emit("log", "Reshuffled pile into deck");
+      }
+      const drawn = room.deck.pop();
+      if (drawn) player.hand.push(drawn);
+
+      // res 保持為預設值（不跳過，不指定下一個玩家）
+    } else {
+      // 應用卡牌效果
+      res = applyCardEffect(room, player.id, card, targetId);
+      io.to(roomId).emit(
+        "log",
+        res.log + ` -> currentValue=${room.currentValue}`
+      );
+
+      // draw
+      if (room.deck.length === 0) {
+        // reshuffle pile into deck
+        room.deck = room.pile.splice(0, room.pile.length - 0);
+        shuffle(room.deck);
+        io.to(roomId).emit("log", "Reshuffled pile into deck");
+      }
+      const drawn = room.deck.pop();
+      if (drawn) player.hand.push(drawn);
     }
 
     // advance turn
